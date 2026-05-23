@@ -136,14 +136,16 @@ async function handleMessageReceived(data) {
     // Find user by the Telnyx number (the "to" field)
     const user = db.getUserByTelnyxNumber(to);
     if (!user) {
-      console.warn(`[Message] No user found for Telnyx number ${to}`);
+      console.warn(`[Message] No user found for Telnyx number ${to} — payload to: ${JSON.stringify(data?.to)}`);
       return;
     }
 
     const userPhone = user.user_phone;
-    console.log(`[Message] ${channel} from ${userPhone}: "${text}"`);
+    console.log(`[Message] ${channel} from ${from} to Telnyx ${to} | owner: ${userPhone} | setup_complete: ${user.setup_complete}`);
+    console.log(`[Message] Text: "${text}"`);
 
-    await onboardingService.processInboundMessage(userPhone, text, channel);
+    // Pass the actual sender (from) so replies go back to them, not always the owner
+    await onboardingService.processInboundMessage(userPhone, text, channel, from);
   } catch (err) {
     console.error('[Message] Error handling received message:', err.message);
   }

@@ -40,7 +40,7 @@ Setup complete. 🎉`,
  * Process an inbound SMS message through the onboarding state machine
  * or forward to Personal.ai if onboarding is complete
  */
-async function processInboundMessage(userPhone, messageText, channel = 'sms') {
+async function processInboundMessage(userPhone, messageText, channel = 'sms', replyTo = null) {
   let user = db.getUserByPhone(userPhone);
 
   // If user doesn't exist yet, create them (edge case)
@@ -82,7 +82,9 @@ async function processInboundMessage(userPhone, messageText, channel = 'sms') {
   });
 
   // Send the response via appropriate channel
-  await sendResponse(userPhone, responseText, channel, user);
+  // replyTo is the actual sender (may differ from userPhone for third-party callers)
+  const sendTo = replyTo || userPhone;
+  await sendResponse(sendTo, responseText, channel, user);
 
   return responseText;
 }
@@ -255,15 +257,17 @@ async function handlePostOnboardingMessage(userPhone, messageText, channel = 'sm
  */
 async function sendResponse(userPhone, responseText, channel, user) {
   if (!user?.telnyx_number) {
-    console.warn(`No Telnyx number for ${userPhone}, skipping send`);
+    console.warn(`[SMS] No Telnyx number for ${userPhone}, skipping send`);
     return;
   }
+
+  console.log(`[SMS] Sending ${channel} from ${user.telnyx_number} to ${userPhone} | profile: ${user.messaging_profile_id || 'none'}`);
+  console.log(`[SMS] Response text: "${responseText?.substring(0, 80)}..."`);
 
   try {
     if (channel === 'whatsapp_text' || channel === 'whatsapp_voice') {
       await telnyxService.sendWhatsApp(user.telnyx_number, userPhone, responseText);
     } else {
-      // SMS (default)
       await telnyxService.sendSms(
         user.telnyx_number,
         userPhone,
@@ -271,8 +275,9 @@ async function sendResponse(userPhone, responseText, channel, user) {
         user.messaging_profile_id
       );
     }
+    console.log(`[SMS] Successfully sent ${channel} to ${userPhone}`);
   } catch (err) {
-    console.error(`Failed to send ${channel} response to ${userPhone}:`, err.message);
+    console.error(`[SMS] FAILED to send ${channel} to ${userPhone}:`, err.message);
   }
 }
 

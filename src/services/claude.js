@@ -1,7 +1,15 @@
 const Anthropic = require('@anthropic-ai/sdk');
 const db = require('../db');
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+let _client = null;
+function getClient() {
+  if (!_client) {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) throw new Error('ANTHROPIC_API_KEY environment variable is not set');
+    _client = new Anthropic({ apiKey });
+  }
+  return _client;
+}
 
 const SYSTEM_PROMPT = `You are a Personal AI assistant that handles calls, texts, and messages on behalf of your user. You answer as their dedicated AI — professional, helpful, and concise.
 
@@ -45,7 +53,7 @@ async function sendMessage(userMessage, userPhone, sourceName = 'SMS') {
     // Trim to last 10 turns to stay within limits
     const trimmedHistory = history.slice(-20);
 
-    const response = await client.messages.create({
+    const response = await getClient().messages.create({
       model: 'claude-opus-4-7',
       max_tokens: 500,
       thinking: { type: 'adaptive' },
