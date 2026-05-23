@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Personal AI — Your AI on your number</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --purple-deep: #6d28d9;
+      --purple-primary: #7c3aed;
+      --purple-light: #8b5cf6;
+      --purple-xlight: #ede9fe;
+      --purple-glow: rgba(124, 58, 237, 0.15);
+      --paper: #fafaf8;
+      --white: #ffffff;
+      --ink: #1a1a1a;
+      --ink-muted: #6b7280;
+      --ink-subtle: #9ca3af;
+      --border: #e5e7eb;
+      --success: #10b981;
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'Inter', -apple-system, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ---- NAV ---- */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      background: rgba(250, 250, 248, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .logo-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--purple-primary), var(--purple-light));
+      box-shadow: 0 0 8px var(--purple-light);
+      animation: pulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.8; }
+    }
+
+    nav a {
+      color: var(--ink-muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: var(--purple-primary); }
+
+    /* ---- HERO ---- */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6rem 1.5rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 900px;
+      height: 700px;
+      background: radial-gradient(ellipse at center, rgba(124,58,237,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--purple-xlight);
+      color: var(--purple-primary);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      margin-bottom: 1.5rem;
+      border: 1px solid rgba(124,58,237,0.2);
+    }
+
+    .hero-badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--purple-primary);
+    }
+
+    h1 {
+      font-size: clamp(2.8rem, 6vw, 5rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      text-align: center;
+      max-width: 780px;
+      margin-bottom: 1.25rem;
+    }
+
+    h1 .highlight {
+      background: linear-gradient(135deg, var(--purple-primary) 0%, #a855f7 50%, var(--purple-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: 1.2rem;
+      color: var(--ink-muted);
+      text-align: center;
+      max-width: 560px;
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+    }
+
+    /* ---- ONBOARDING CARD ---- */
+    .onboard-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 460px;
+      box-shadow:
+        0 1px 3px rgba(0,0,0,0.05),
+        0 10px 40px rgba(124,58,237,0.08);
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--ink-muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .phone-input-wrapper {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+
+    .phone-flag {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.2rem;
+      pointer-events: none;
+    }
+
+    #phoneInput {
+      width: 100%;
+      padding: 0.875rem 1rem 0.875rem 3rem;
+      font-family: var(--mono);
+      font-size: 1.1rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      outline: none;
+      background: var(--paper);
+      color: var(--ink);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none;
+    }
+
+    #phoneInput:focus {
+      border-color: var(--purple-primary);
+      box-shadow: 0 0 0 4px var(--purple-glow);
+      background: var(--white);
+    }
+
+    #phoneInput.error {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 4px rgba(239,68,68,0.12);
+    }
+
+    .error-msg {
+      color: #ef4444;
+      font-size: 0.8rem;
+      margin-top: -0.5rem;
+      margin-bottom: 0.75rem;
+      display: none;
+    }
+
+    .error-msg.show { display: block; }
+
+    .cta-btn {
+      width: 100%;
+      padding: 0.9rem 1.5rem;
+      background: linear-gradient(135deg, var(--purple-deep) 0%, var(--purple-primary) 100%);
+      color: white;
+      font-family: var(--sans);
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+      box-shadow: 0 4px 20px rgba(124,58,237,0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .cta-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 28px rgba(124,58,237,0.45);
+    }
+
+    .cta-btn:active:not(:disabled) { transform: translateY(0); }
+
+    .cta-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .cta-btn .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    .cta-btn.loading .spinner { display: block; }
+    .cta-btn.loading .btn-text { display: none; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .card-footer {
+      margin-top: 1rem;
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--ink-subtle);
+      line-height: 1.5;
+    }
+
+    /* ---- SUCCESS STATE ---- */
+    #successState {
+      display: none;
+    }
+
+    .success-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .success-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 1.2rem;
+    }
+
+    .success-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .success-sub {
+      font-size: 0.85rem;
+      color: var(--ink-muted);
+      margin-top: 0.15rem;
+    }
+
+    .provisioned-number-box {
+      background: linear-gradient(135deg, var(--purple-deep), var(--purple-primary));
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.25rem;
+      color: white;
+    }
+
+    .pn-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      opacity: 0.75;
+      margin-bottom: 0.25rem;
+    }
+
+    .pn-number {
+      font-family: var(--mono);
+      font-size: 1.5rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+    }
+
+    .pn-instruction {
+      font-size: 0.82rem;
+      opacity: 0.85;
+      margin-top: 0.35rem;
+    }
+
+    /* ---- iMESSAGE THREAD ---- */
+    .imessage-container {
+      background: #f3f3f3;
+      border-radius: 14px;
+      padding: 1rem;
+      overflow: hidden;
+    }
+
+    .imessage-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .imessage-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--purple-primary), var(--purple-light));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1rem;
+    }
+
+    .imessage-contact {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .imessage-status {
+      font-size: 0.7rem;
+      color: var(--success);
+    }
+
+    .message-thread {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    .msg-bubble {
+      max-width: 85%;
+      padding: 0.6rem 0.9rem;
+      border-radius: 16px;
+      font-size: 0.83rem;
+      line-height: 1.5;
+      animation: fadeInUp 0.4s ease;
+    }
+
+    .msg-bubble.ai {
+      background: white;
+      color: var(--ink);
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .msg-bubble.user {
+      background: #007aff;
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ---- FEATURES SECTION ---- */
+    .features {
+      padding: 6rem 1.5rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      text-align: center;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--purple-primary);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      margin-bottom: 1rem;
+    }
+
+    .section-sub {
+      text-align: center;
+      font-size: 1.05rem;
+      color: var(--ink-muted);
+      max-width: 520px;
+      margin: 0 auto 3.5rem;
+      line-height: 1.65;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--purple-xlight) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(124,58,237,0.12);
+      border-color: rgba(124,58,237,0.25);
+    }
+
+    .feature-card:hover::before { opacity: 1; }
+
+    .feature-icon-wrap {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 1.25rem;
+      position: relative;
+    }
+
+    .feature-card:nth-child(1) .feature-icon-wrap { background: #ede9fe; }
+    .feature-card:nth-child(2) .feature-icon-wrap { background: #dcfce7; }
+    .feature-card:nth-child(3) .feature-icon-wrap { background: #fef3c7; }
+
+    .feature-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      position: relative;
+    }
+
+    .feature-desc {
+      font-size: 0.9rem;
+      color: var(--ink-muted);
+      line-height: 1.65;
+      position: relative;
+    }
+
+    /* ---- CHANNELS SECTION ---- */
+    .channels-section {
+      background: var(--ink);
+      color: var(--white);
+      padding: 5rem 1.5rem;
+      text-align: center;
+    }
+
+    .channels-section .section-label {
+      color: var(--purple-light);
+    }
+
+    .channels-section .section-title {
+      color: white;
+    }
+
+    .channels-section .section-sub {
+      color: rgba(255,255,255,0.65);
+    }
+
+    .channels-grid {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+
+    .channel-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      width: 120px;
+    }
+
+    .channel-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      transition: transform 0.2s;
+    }
+
+    .channel-item:hover .channel-icon { transform: scale(1.1); }
+
+    .channel-icon.sms { background: rgba(124,58,237,0.15); }
+    .channel-icon.voice { background: rgba(16,185,129,0.15); }
+    .channel-icon.whatsapp { background: rgba(37,211,102,0.15); }
+    .channel-icon.wa-voice { background: rgba(59,130,246,0.15); }
+
+    .channel-name {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.8);
+    }
+
+    .channel-desc {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.45);
+      text-align: center;
+    }
+
+    /* ---- NUMBER BADGE ---- */
+    .one-number-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(124,58,237,0.2);
+      border: 1px solid rgba(124,58,237,0.4);
+      color: var(--purple-light);
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ---- FOOTER ---- */
+    footer {
+      padding: 2rem 1.5rem;
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--ink-subtle);
+      border-top: 1px solid var(--border);
+    }
+
+    /* ---- UTILITIES ---- */
+    .hidden { display: none !important; }
+
+    @media (max-width: 640px) {
+      nav { padding: 0.75rem 1.25rem; }
+      h1 { font-size: 2.4rem; }
+      .onboard-card { border-radius: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="logo">
+    <div class="logo-dot"></div>
+    Personal AI
+  </a>
+  <a href="/admin">Admin</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">
+    <div class="hero-badge-dot"></div>
+    Now Available
+  </div>
+
+  <h1>
+    Your AI.<br />
+    <span class="highlight">On your number.</span>
+  </h1>
+
+  <p class="hero-sub">
+    One phone number handles everything — calls, texts, WhatsApp. Your Personal AI answers, screens, and responds just like you.
+  </p>
+
+  <!-- ONBOARDING CARD -->
+  <div class="onboard-card">
+
+    <!-- Input State -->
+    <div id="inputState">
+      <div class="card-label">Your phone number</div>
+
+      <div class="phone-input-wrapper">
+        <span class="phone-flag">🇺🇸</span>
+        <input
+          type="tel"
+          id="phoneInput"
+          placeholder="(555) 000-0000"
+          autocomplete="tel"
+          maxlength="20"
+        />
+      </div>
+
+      <p class="error-msg" id="errorMsg"></p>
+
+      <button class="cta-btn" id="ctaBtn" onclick="handleOnboard()">
+        <div class="spinner"></div>
+        <span class="btn-text">Set up my Personal AI →</span>
+      </button>
+
+      <div class="card-footer">
+        By continuing, you agree to receive SMS messages at this number.<br />
+        No spam, ever. We only send your AI responses.
+      </div>
+    </div>
+
+    <!-- Success State -->
+    <div id="successState">
+      <div class="success-header">
+        <div class="success-icon">✓</div>
+        <div>
+          <div class="success-title">You're all set!</div>
+          <div class="success-sub">Your Personal AI number is ready</div>
+        </div>
+      </div>
+
+      <div class="provisioned-number-box">
+        <div class="pn-label">Your AI Number</div>
+        <div class="pn-number" id="provisionedNumber">—</div>
+        <div class="pn-instruction">Text this number to begin your setup →</div>
+      </div>
+
+      <!-- Simulated iMessage Thread -->
+      <div class="imessage-container">
+        <div class="imessage-header">
+          <div class="imessage-avatar">🤖</div>
+          <div>
+            <div class="imessage-contact">Personal AI</div>
+            <div class="imessage-status">● Active</div>
+          </div>
+        </div>
+        <div class="message-thread" id="messageThread">
+          <!-- Messages will be injected here -->
+        </div>
+      </div>
+
+      <button class="cta-btn" style="margin-top:1.25rem;" onclick="resetForm()">
+        <span class="btn-text">Set up another number</span>
+      </button>
+    </div>
+
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+  <div class="section-label">What your AI does</div>
+  <h2 class="section-title">Three powers, one number</h2>
+  <p class="section-sub">Your Personal AI works 24/7 so you don't have to. It knows your preferences and responds like you would.</p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon-wrap">📞</div>
+      <div class="feature-name">Screen Callers</div>
+      <p class="feature-desc">
+        Unknown number calls? Your AI answers, asks who's calling and why, then sends you a transcript in seconds. You decide: voicemail, take it live, or let me handle it.
+      </p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon-wrap">💼</div>
+      <div class="feature-name">Handle Leads</div>
+      <p class="feature-desc">
+        When someone reaches out about working with you, your AI qualifies them, captures their details, and can offer times on your calendar — all without you lifting a finger.
+      </p>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon-wrap">👨‍👩‍👧</div>
+      <div class="feature-name">Family Messages</div>
+      <p class="feature-desc">
+        Keep threads with family warm and brief when you're heads-down. Your AI responds with the right tone so they know you're thinking of them, even when you're busy.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- CHANNELS -->
+<section class="channels-section">
+  <div class="section-label">Omnichannel</div>
+  <h2 class="section-title">One number.<br />Every channel.</h2>
+  <p class="section-sub">SMS, voice calls, WhatsApp text, WhatsApp voice — all routed through your single Personal AI number.</p>
+
+  <div class="one-number-badge">
+    +1 (XXX) XXX-XXXX — your number
+  </div>
+
+  <div class="channels-grid">
+    <div class="channel-item">
+      <div class="channel-icon sms">💬</div>
+      <div class="channel-name">SMS</div>
+      <div class="channel-desc">Text messages handled by AI</div>
+    </div>
+    <div class="channel-item">
+      <div class="channel-icon voice">📞</div>
+      <div class="channel-name">Voice</div>
+      <div class="channel-desc">Live call screening & response</div>
+    </div>
+    <div class="channel-item">
+      <div class="channel-icon whatsapp">📱</div>
+      <div class="channel-name">WhatsApp</div>
+      <div class="channel-desc">WA text messages &amp; chats</div>
+    </div>
+    <div class="channel-item">
+      <div class="channel-icon wa-voice">🎙️</div>
+      <div class="channel-name">WA Voice</div>
+      <div class="channel-desc">WhatsApp voice messages</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  &copy; 2025 Personal AI — Powered by Telnyx &amp; Personal.ai
+</footer>
+
+<script>
+  // Phone number formatter
+  const phoneInput = document.getElementById('phoneInput');
+  phoneInput.addEventListener('input', function(e) {
+    let val = e.target.value.replace(/\D/g, '');
+    if (val.startsWith('1')) val = val.slice(1);
+    val = val.slice(0, 10);
+
+    let formatted = '';
+    if (val.length > 0) formatted = '(' + val.slice(0, 3);
+    if (val.length >= 4) formatted += ') ' + val.slice(3, 6);
+    if (val.length >= 7) formatted += '-' + val.slice(6, 10);
+
+    e.target.value = formatted;
+    phoneInput.classList.remove('error');
+    document.getElementById('errorMsg').classList.remove('show');
+  });
+
+  phoneInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') handleOnboard();
+  });
+
+  function getE164(formatted) {
+    const digits = formatted.replace(/\D/g, '');
+    if (digits.length === 10) return '+1' + digits;
+    if (digits.length === 11 && digits.startsWith('1')) return '+' + digits;
+    return null;
+  }
+
+  function showError(msg) {
+    phoneInput.classList.add('error');
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg;
+    el.classList.add('show');
+  }
+
+  async function handleOnboard() {
+    const raw = phoneInput.value;
+    const e164 = getE164(raw);
+
+    if (!e164) {
+      showError('Please enter a valid US phone number');
+      return;
+    }
+
+    const btn = document.getElementById('ctaBtn');
+    btn.disabled = true;
+    btn.classList.add('loading');
+
+    try {
+      const res = await fetch('/api/onboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: e164 }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        showError(data.error || 'Something went wrong. Please try again.');
+        return;
+      }
+
+      showSuccess(data);
+
+    } catch (err) {
+      showError('Network error. Please check your connection and try again.');
+    } finally {
+      btn.disabled = false;
+      btn.classList.remove('loading');
+    }
+  }
+
+  const DEMO_MESSAGES = [
+    { type: 'ai', text: "It's me — your Personal AI. I live at your number now.", delay: 400 },
+    { type: 'ai', text: "What should I help with first? Reply: 1) Screen callers, 2) Handle leads, 3) Family messages", delay: 900 },
+    { type: 'user', text: '1 and 2', delay: 1600 },
+    { type: 'ai', text: "Good picks. Starting with call screening...", delay: 2200 },
+  ];
+
+  function showSuccess(data) {
+    document.getElementById('inputState').style.display = 'none';
+    const successState = document.getElementById('successState');
+    successState.style.display = 'block';
+
+    const numEl = document.getElementById('provisionedNumber');
+    const num = data.telnyxNumber || data.user?.telnyxNumber || 'Your number';
+    numEl.textContent = formatDisplay(num);
+
+    // Animate message thread
+    const thread = document.getElementById('messageThread');
+    thread.innerHTML = '';
+    DEMO_MESSAGES.forEach(msg => {
+      setTimeout(() => {
+        const bubble = document.createElement('div');
+        bubble.className = `msg-bubble ${msg.type}`;
+        bubble.textContent = msg.text;
+        thread.appendChild(bubble);
+        thread.scrollTop = thread.scrollHeight;
+      }, msg.delay);
+    });
+  }
+
+  function formatDisplay(phone) {
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length === 11 && digits.startsWith('1')) {
+      const local = digits.slice(1);
+      return `+1 (${local.slice(0,3)}) ${local.slice(3,6)}-${local.slice(6)}`;
+    }
+    return phone;
+  }
+
+  function resetForm() {
+    document.getElementById('inputState').style.display = 'block';
+    document.getElementById('successState').style.display = 'none';
+    phoneInput.value = '';
+    phoneInput.focus();
+  }
+</script>
+</body>
+</html>

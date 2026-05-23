@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Personal AI — Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --purple-deep: #6d28d9;
+      --purple-primary: #7c3aed;
+      --purple-light: #8b5cf6;
+      --purple-xlight: #ede9fe;
+      --paper: #f8f8f6;
+      --white: #ffffff;
+      --ink: #1a1a1a;
+      --ink-muted: #6b7280;
+      --ink-subtle: #9ca3af;
+      --border: #e5e7eb;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'Inter', -apple-system, sans-serif;
+      --sidebar-w: 240px;
+    }
+
+    body {
+      font-family: var(--sans);
+      background: var(--paper);
+      color: var(--ink);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ---- SIDEBAR ---- */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--ink);
+      color: white;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      z-index: 50;
+    }
+
+    .sidebar-logo {
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-weight: 700;
+      font-size: 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .sidebar-logo-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--purple-primary), var(--purple-light));
+      box-shadow: 0 0 6px var(--purple-light);
+    }
+
+    .sidebar-badge {
+      margin-left: auto;
+      background: rgba(124,58,237,0.25);
+      color: var(--purple-light);
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    .sidebar-nav {
+      padding: 1.25rem 0.75rem;
+      flex: 1;
+    }
+
+    .nav-section {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0 0.75rem;
+      margin: 1.25rem 0 0.5rem;
+    }
+
+    .nav-section:first-child { margin-top: 0; }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.55rem 0.75rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.65);
+      transition: background 0.15s, color 0.15s;
+      text-decoration: none;
+      user-select: none;
+    }
+
+    .nav-item:hover {
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.9);
+    }
+
+    .nav-item.active {
+      background: rgba(124,58,237,0.25);
+      color: white;
+    }
+
+    .nav-icon { width: 18px; text-align: center; }
+
+    .sidebar-footer {
+      padding: 1rem 1.25rem;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 6px var(--success);
+    }
+
+    /* ---- MAIN CONTENT ---- */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      background: rgba(248,248,246,0.9);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 40;
+    }
+
+    .topbar-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .refresh-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.45rem 0.9rem;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    .refresh-btn:hover { border-color: var(--purple-primary); }
+
+    .last-updated {
+      font-size: 0.78rem;
+      color: var(--ink-subtle);
+    }
+
+    .content {
+      padding: 2rem;
+      flex: 1;
+    }
+
+    /* ---- STATS GRID ---- */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      transition: box-shadow 0.2s;
+    }
+
+    .stat-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+
+    .stat-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--ink-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 800;
+      font-family: var(--mono);
+      color: var(--ink);
+      line-height: 1;
+    }
+
+    .stat-change {
+      font-size: 0.75rem;
+      color: var(--ink-subtle);
+      margin-top: 0.35rem;
+    }
+
+    /* ---- SECTION HEADERS ---- */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    /* ---- TABLES ---- */
+    .table-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    .table-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .table-header h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .count-badge {
+      background: var(--purple-xlight);
+      color: var(--purple-primary);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      padding: 0.65rem 1.5rem;
+      background: #fafaf8;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ink-muted);
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 0.9rem 1.5rem;
+      font-size: 0.85rem;
+      border-bottom: 1px solid #f3f3f3;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    tr:hover td { background: #fafaf8; }
+
+    .phone-cell {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+    }
+
+    .status-pill.complete {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .status-pill.pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-dot-small {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+    }
+
+    .status-pill.complete .status-dot-small { background: var(--success); }
+    .status-pill.pending .status-dot-small { background: var(--warning); }
+
+    .channel-chips {
+      display: flex;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+    }
+
+    .channel-chip {
+      font-size: 0.7rem;
+      font-weight: 500;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      background: var(--purple-xlight);
+      color: var(--purple-primary);
+    }
+
+    .action-btn {
+      padding: 0.35rem 0.75rem;
+      border-radius: 7px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s;
+    }
+
+    .action-btn:hover { opacity: 0.8; }
+
+    .btn-view {
+      background: var(--purple-xlight);
+      color: var(--purple-primary);
+      margin-right: 0.35rem;
+    }
+
+    .btn-deprovision {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    /* ---- ACTIVITY LOG ---- */
+    .activity-log {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .log-entry {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 0.85rem 1.5rem;
+      border-bottom: 1px solid #f3f3f3;
+      font-size: 0.82rem;
+    }
+
+    .log-entry:last-child { border-bottom: none; }
+
+    .log-time {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--ink-subtle);
+      white-space: nowrap;
+      min-width: 80px;
+    }
+
+    .log-channel {
+      min-width: 80px;
+    }
+
+    .log-phone {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--ink-muted);
+      min-width: 130px;
+    }
+
+    .log-content {
+      flex: 1;
+      color: var(--ink);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .direction-icon {
+      font-size: 0.8rem;
+      min-width: 20px;
+    }
+
+    /* ---- CHANNEL BREAKDOWN ---- */
+    .breakdown-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .breakdown-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem;
+      text-align: center;
+    }
+
+    .breakdown-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .breakdown-count {
+      font-family: var(--mono);
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+    .breakdown-label {
+      font-size: 0.75rem;
+      color: var(--ink-muted);
+      margin-top: 0.2rem;
+    }
+
+    /* ---- MODAL ---- */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.show { display: flex; }
+
+    .modal {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 560px;
+      width: calc(100% - 2rem);
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-title { font-size: 1.1rem; font-weight: 700; }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--paper);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      color: var(--ink-muted);
+    }
+
+    .modal-close:hover { background: var(--border); }
+
+    .detail-row {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+      font-size: 0.875rem;
+    }
+
+    .detail-label {
+      min-width: 130px;
+      font-weight: 600;
+      color: var(--ink-muted);
+    }
+
+    .detail-value { font-family: var(--mono); }
+
+    .empty-state {
+      padding: 3rem;
+      text-align: center;
+      color: var(--ink-subtle);
+      font-size: 0.9rem;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border);
+      border-top-color: var(--purple-primary);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .main { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-dot"></div>
+    Personal AI
+    <span class="sidebar-badge">Admin</span>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section">Overview</div>
+    <a class="nav-item active" onclick="showSection('overview')">
+      <span class="nav-icon">📊</span> Dashboard
+    </a>
+
+    <div class="nav-section">Manage</div>
+    <a class="nav-item" onclick="showSection('users')">
+      <span class="nav-icon">👥</span> Users
+    </a>
+    <a class="nav-item" onclick="showSection('activity')">
+      <span class="nav-icon">📋</span> Activity Log
+    </a>
+
+    <div class="nav-section">Tools</div>
+    <a class="nav-item" href="/" target="_blank">
+      <span class="nav-icon">↗</span> Onboarding App
+    </a>
+    <a class="nav-item" href="/health" target="_blank">
+      <span class="nav-icon">❤️</span> Health Check
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="status-indicator">
+      <div class="status-dot"></div>
+      Server online
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="pageTitle">Dashboard</div>
+    <div class="topbar-actions">
+      <span class="last-updated" id="lastUpdated">—</span>
+      <button class="refresh-btn" onclick="loadAll()">
+        ↻ Refresh
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- OVERVIEW SECTION -->
+    <div id="section-overview">
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+          <div class="stat-label">Total Users</div>
+          <div class="stat-value" id="stat-users">—</div>
+          <div class="stat-change">Provisioned numbers</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Active Users</div>
+          <div class="stat-value" id="stat-active">—</div>
+          <div class="stat-change">Setup complete</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Messages</div>
+          <div class="stat-value" id="stat-messages">—</div>
+          <div class="stat-change">All channels</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Tokens</div>
+          <div class="stat-value" id="stat-tokens">—</div>
+          <div class="stat-change">Personal.ai usage</div>
+        </div>
+      </div>
+
+      <div class="breakdown-grid" id="channelBreakdown"></div>
+
+      <div class="section-header">
+        <h3 class="section-title">Recent Activity</h3>
+      </div>
+
+      <div class="activity-log" id="activityLog">
+        <div class="empty-state">Loading...</div>
+      </div>
+    </div>
+
+    <!-- USERS SECTION -->
+    <div id="section-users" style="display:none">
+      <div class="table-card">
+        <div class="table-header">
+          <h3>All Users <span class="count-badge" id="userCount">0</span></h3>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>User Phone</th>
+              <th>Telnyx Number</th>
+              <th>Status</th>
+              <th>Channels</th>
+              <th>Messages</th>
+              <th>Memories</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody">
+            <tr><td colspan="7" class="empty-state">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ACTIVITY SECTION -->
+    <div id="section-activity" style="display:none">
+      <div class="table-card">
+        <div class="table-header">
+          <h3>Activity Log <span class="count-badge" id="activityCount">0</span></h3>
+        </div>
+        <div id="fullActivityLog">
+          <div class="empty-state">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- USER DETAIL MODAL -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">User Details</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modalBody">Loading...</div>
+  </div>
+</div>
+
+<script>
+  const sections = ['overview', 'users', 'activity'];
+
+  function showSection(name) {
+    sections.forEach(s => {
+      document.getElementById(`section-${s}`).style.display = s === name ? 'block' : 'none';
+    });
+
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+
+    const titles = { overview: 'Dashboard', users: 'Users', activity: 'Activity Log' };
+    document.getElementById('pageTitle').textContent = titles[name] || name;
+
+    if (name === 'users') loadUsers();
+    if (name === 'activity') loadActivity();
+  }
+
+  async function loadAll() {
+    await Promise.all([loadStats(), loadUsers(), loadActivity()]);
+    document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+  }
+
+  async function loadStats() {
+    try {
+      const res = await fetch('/admin/api/stats');
+      const data = await res.json();
+
+      document.getElementById('stat-users').textContent = data.totalUsers ?? 0;
+      document.getElementById('stat-active').textContent = data.activeUsers ?? 0;
+      document.getElementById('stat-messages').textContent = data.totalMessages ?? 0;
+      document.getElementById('stat-tokens').textContent = (data.totalTokens ?? 0).toLocaleString();
+
+      // Channel breakdown
+      const breakdown = document.getElementById('channelBreakdown');
+      const channelIcons = { sms: '💬', voice: '📞', whatsapp_text: '📱', whatsapp_voice: '🎙️' };
+      const channelNames = { sms: 'SMS', voice: 'Voice', whatsapp_text: 'WhatsApp', whatsapp_voice: 'WA Voice' };
+
+      const channels = data.channelBreakdown || [];
+      breakdown.innerHTML = channels.length === 0
+        ? ''
+        : channels.map(c => `
+          <div class="breakdown-card">
+            <div class="breakdown-icon">${channelIcons[c.channel] || '📨'}</div>
+            <div class="breakdown-count">${c.count}</div>
+            <div class="breakdown-label">${channelNames[c.channel] || c.channel}</div>
+          </div>
+        `).join('');
+
+      // Activity log
+      const activity = data.recentActivity || [];
+      renderActivityLog(activity, 'activityLog');
+
+    } catch (err) {
+      console.error('Stats load error:', err);
+    }
+  }
+
+  async function loadUsers() {
+    try {
+      const res = await fetch('/admin/api/users');
+      const data = await res.json();
+      const users = data.users || [];
+
+      document.getElementById('userCount').textContent = users.length;
+
+      const tbody = document.getElementById('usersTableBody');
+
+      if (users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No users yet. <a href="/" style="color:#7c3aed">Onboard someone</a>.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = users.map(u => {
+        const status = u.setup_complete
+          ? `<span class="status-pill complete"><span class="status-dot-small"></span>Active</span>`
+          : `<span class="status-pill pending"><span class="status-dot-small"></span>Pending</span>`;
+
+        const channels = Object.keys(u.channelCounts || {}).map(ch =>
+          `<span class="channel-chip">${ch}</span>`
+        ).join('') || '<span style="color:#9ca3af;font-size:0.75rem">none</span>';
+
+        return `
+          <tr>
+            <td class="phone-cell">${u.user_phone}</td>
+            <td class="phone-cell">${u.telnyx_number || '<span style="color:#9ca3af">—</span>'}</td>
+            <td>${status}</td>
+            <td><div class="channel-chips">${channels}</div></td>
+            <td>${u.messageCount}</td>
+            <td>${u.memoryCount}</td>
+            <td>
+              <button class="action-btn btn-view" onclick="viewUser('${u.user_phone}')">View</button>
+              <button class="action-btn btn-deprovision" onclick="deprovisionUser('${u.user_phone}')">Delete</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+    } catch (err) {
+      console.error('Users load error:', err);
+    }
+  }
+
+  async function loadActivity() {
+    try {
+      const res = await fetch('/admin/api/messages?limit=50');
+      const data = await res.json();
+      const messages = data.messages || [];
+
+      document.getElementById('activityCount').textContent = messages.length;
+      renderActivityLog(messages, 'fullActivityLog');
+    } catch (err) {
+      console.error('Activity load error:', err);
+    }
+  }
+
+  function renderActivityLog(messages, containerId) {
+    const container = document.getElementById(containerId);
+
+    if (!messages || messages.length === 0) {
+      container.innerHTML = '<div class="empty-state">No messages yet.</div>';
+      return;
+    }
+
+    const channelIcons = { sms: '💬', voice: '📞', whatsapp_text: '📱', whatsapp_voice: '🎙️' };
+    const directionIcons = { inbound: '↙', outbound: '↗' };
+    const dirColors = { inbound: '#7c3aed', outbound: '#10b981' };
+
+    container.innerHTML = messages.map(m => {
+      const time = new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const icon = channelIcons[m.channel] || '📨';
+      const dirIcon = directionIcons[m.direction] || '→';
+      const content = m.content ? (m.content.slice(0, 80) + (m.content.length > 80 ? '…' : '')) : '[voice/media]';
+
+      return `
+        <div class="log-entry">
+          <span class="log-time">${time}</span>
+          <span class="log-phone">${m.user_phone}</span>
+          <span class="log-channel"><span class="channel-chip">${icon} ${m.channel}</span></span>
+          <span class="direction-icon" style="color:${dirColors[m.direction]}">${dirIcon}</span>
+          <span class="log-content">${escapeHtml(content)}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function viewUser(phone) {
+    document.getElementById('modalTitle').textContent = phone;
+    document.getElementById('modalBody').innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+    document.getElementById('userModal').classList.add('show');
+
+    try {
+      const res = await fetch(`/admin/api/users/${encodeURIComponent(phone)}`);
+      const data = await res.json();
+      const u = data.user;
+      const state = data.onboardingState;
+
+      const rows = [
+        ['Phone', u.user_phone],
+        ['Telnyx Number', u.telnyx_number || '—'],
+        ['PAI Domain', u.personal_ai_domain || '—'],
+        ['Voice Mode', u.voice_mode],
+        ['Lead Handling', u.lead_handling],
+        ['Family Mode', u.family_mode ? 'On' : 'Off'],
+        ['Setup Complete', u.setup_complete ? 'Yes' : 'No'],
+        ['Onboarding Step', state?.step || '—'],
+        ['Created', new Date(u.created_at).toLocaleString()],
+        ['Messages', data.messages?.length || 0],
+        ['Memories', data.memories?.length || 0],
+      ];
+
+      const channelIcons = { sms: '💬', voice: '📞', whatsapp_text: '📱', whatsapp_voice: '🎙️' };
+
+      const recentMessages = (data.messages || []).slice(0, 5).map(m => `
+        <div class="log-entry" style="padding:0.65rem 0;border-bottom:1px solid #f3f3f3;">
+          <span style="font-family:var(--mono);font-size:0.72rem;color:#9ca3af;min-width:50px;">${new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span>
+          <span style="min-width:60px"><span class="channel-chip">${channelIcons[m.channel]||'📨'} ${m.channel}</span></span>
+          <span style="font-size:0.8rem;color:#374151">${escapeHtml((m.content||'').slice(0,60))}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('modalBody').innerHTML = `
+        ${rows.map(([l, v]) => `
+          <div class="detail-row">
+            <span class="detail-label">${l}</span>
+            <span class="detail-value">${escapeHtml(String(v))}</span>
+          </div>
+        `).join('')}
+
+        ${recentMessages ? `
+          <h4 style="font-size:0.85rem;font-weight:700;margin:1.5rem 0 0.75rem;">Recent Messages</h4>
+          ${recentMessages}
+        ` : ''}
+      `;
+    } catch (err) {
+      document.getElementById('modalBody').innerHTML = `<div class="empty-state">Error loading user: ${err.message}</div>`;
+    }
+  }
+
+  async function deprovisionUser(phone) {
+    if (!confirm(`Deprovision ${phone}? This will release their Telnyx number and delete all data.`)) return;
+
+    try {
+      const res = await fetch(`/api/users/${encodeURIComponent(phone)}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        loadAll();
+      } else {
+        alert('Error: ' + (data.error || 'Unknown error'));
+      }
+    } catch (err) {
+      alert('Error: ' + err.message);
+    }
+  }
+
+  function closeModal() {
+    document.getElementById('userModal').classList.remove('show');
+  }
+
+  document.getElementById('userModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Initial load
+  loadAll();
+</script>
+</body>
+</html>
