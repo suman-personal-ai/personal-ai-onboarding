@@ -8,7 +8,7 @@ const config = {
     apiKey: process.env.TELNYX_API_KEY,
     publicKey: process.env.TELNYX_PUBLIC_KEY,
     // Optional: reuse an existing messaging profile instead of creating one per user
-    defaultMessagingProfileId: process.env.TELNYX_MESSAGING_PROFILE_ID || null,
+    defaultMessagingProfileId: process.env.TELNYX_MESSAGING_PROFILE_ID || '40019e52-dacd-4c66-9a67-b7fb5e4fe26d',
     // Optional: call control application ID for voice
     callControlAppId: process.env.TELNYX_CALL_CONTROL_APP_ID || null,
   },

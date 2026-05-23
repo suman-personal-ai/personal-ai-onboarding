@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const config = require('../config');
 const db = require('../db');
 const telnyxService = require('../services/telnyx');
 const onboardingService = require('../services/onboarding');
@@ -159,7 +160,6 @@ async function handleCallInitiated(data) {
     console.log(`[Voice] Call initiated from ${from} to ${to}`);
 
     // Answer the call
-    const config = require('../config');
     await telnyxService.answerCall(callControlId, `${config.baseUrl}/webhook/telnyx`);
   } catch (err) {
     console.error('[Voice] Error handling call.initiated:', err.message);
