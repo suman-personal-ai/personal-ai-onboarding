@@ -1,6 +1,6 @@
 const db = require('../db');
 const telnyxService = require('./telnyx');
-const personalAiService = require('./personalai');
+const personalAiService = require('./claude');
 
 // Onboarding step definitions
 const STEPS = {

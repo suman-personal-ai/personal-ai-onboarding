@@ -4,7 +4,7 @@ const config = require('../config');
 const db = require('../db');
 const telnyxService = require('../services/telnyx');
 const onboardingService = require('../services/onboarding');
-const personalAiService = require('../services/personalai');
+const personalAiService = require('../services/claude');
 
 // Parse raw body for webhook signature verification
 // (configured in server.js via express.raw)

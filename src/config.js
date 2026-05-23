@@ -12,10 +12,8 @@ const config = {
     // Optional: call control application ID for voice
     callControlAppId: process.env.TELNYX_CALL_CONTROL_APP_ID || null,
   },
-  personalAi: {
-    apiKey: process.env.PERSONAL_AI_API_KEY,
-    baseUrl: 'https://api.personal.ai/v1',
-    domainName: process.env.PERSONAL_AI_DOMAIN || 'humanailabs-john-gbtrk',
+  anthropic: {
+    apiKey: process.env.ANTHROPIC_API_KEY,
   },
   db: {
     path: process.env.DB_PATH || './data/app.db',
