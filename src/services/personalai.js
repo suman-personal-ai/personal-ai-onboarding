@@ -15,18 +15,18 @@ function paiHeaders() {
 /**
  * Send a message to Personal.ai and get AI response
  * @param {string} userMessage - The user's message
- * @param {string} userPhone - E.164 phone (will be used as DomainName without +)
+ * @param {string} userPhone - E.164 phone (used as UserName for context)
  * @param {string} sourceName - Channel source (SMS, WhatsApp, Voice)
  * @returns {Promise<{message: string, score: number}>}
  */
 async function sendMessage(userMessage, userPhone, sourceName = 'SMS') {
-  const domainName = userPhone.replace('+', '');
+  const domainName = config.personalAi.domainName;
 
   try {
     const response = await axios.post(`${PAI_BASE}/message`, {
       Text: userMessage,
       DomainName: domainName,
-      UserName: 'PersonalAI',
+      UserName: userPhone.replace('+', ''),
       SourceName: sourceName,
       Score: 0.5,
     }, {
@@ -54,12 +54,12 @@ async function sendMessage(userMessage, userPhone, sourceName = 'SMS') {
 /**
  * Upload a memory to Personal.ai
  * @param {string} memoryText - Memory content
- * @param {string} userPhone - E.164 phone
+ * @param {string} userPhone - E.164 phone (used for tagging)
  * @param {string} category - Memory category
  * @param {string[]} tags - Additional tags
  */
 async function uploadMemory(memoryText, userPhone, category = 'general', tags = []) {
-  const domainName = userPhone.replace('+', '');
+  const domainName = config.personalAi.domainName;
 
   try {
     const response = await axios.post(`${PAI_BASE}/memory`, {
@@ -67,7 +67,7 @@ async function uploadMemory(memoryText, userPhone, category = 'general', tags = 
       DomainName: domainName,
       SourceName: 'onboarding',
       RawFeedText: memoryText,
-      Tags: ['onboarding', category, ...tags],
+      Tags: ['onboarding', category, userPhone.replace('+', ''), ...tags],
     }, {
       headers: paiHeaders(),
       timeout: 10000,

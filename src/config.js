@@ -15,6 +15,7 @@ const config = {
   personalAi: {
     apiKey: process.env.PERSONAL_AI_API_KEY,
     baseUrl: 'https://api.personal.ai/v1',
+    domainName: process.env.PERSONAL_AI_DOMAIN || 'humanailabs-john-gbtrk',
   },
   db: {
     path: process.env.DB_PATH || './data/app.db',
