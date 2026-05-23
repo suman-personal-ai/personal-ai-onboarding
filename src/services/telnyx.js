@@ -144,12 +144,18 @@ async function provisionNumberForUser(userPhone) {
   const selectedNumber = availableNumbers[0].phone_number;
   console.log(`Selected number: ${selectedNumber}`);
 
-  // 2. Create messaging profile
-  const profile = await createMessagingProfile(userPhone);
-  console.log(`Created messaging profile: ${profile.id}`);
+  // 2. Use existing default profile (if configured) or create a per-user profile
+  let profileId = config.telnyx.defaultMessagingProfileId;
+  if (profileId) {
+    console.log(`Using default messaging profile: ${profileId}`);
+  } else {
+    const profile = await createMessagingProfile(userPhone);
+    profileId = profile.id;
+    console.log(`Created messaging profile: ${profileId}`);
+  }
 
   // 3. Order the phone number
-  const order = await orderPhoneNumber(selectedNumber, profile.id);
+  const order = await orderPhoneNumber(selectedNumber, profileId);
   console.log(`Order placed: ${order.id}`);
 
   // 4. Wait for order to complete
@@ -164,7 +170,7 @@ async function provisionNumberForUser(userPhone) {
   return {
     phoneNumber: selectedNumber,
     orderId: order.id,
-    messagingProfileId: profile.id,
+    messagingProfileId: profileId,
     numberRecordId: completedOrder?.phone_numbers?.[0]?.id || null,
   };
 }
