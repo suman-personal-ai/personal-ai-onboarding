@@ -3,7 +3,7 @@ require('dotenv').config();
 const config = {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: parseInt(process.env.PORT || '3000', 10),
-  baseUrl: process.env.BASE_URL || 'http://localhost:3000',
+  baseUrl: process.env.BASE_URL || 'https://personal-ai-onboarding-production.up.railway.app',
   telnyx: {
     apiKey: process.env.TELNYX_API_KEY,
     publicKey: process.env.TELNYX_PUBLIC_KEY,

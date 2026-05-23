@@ -159,7 +159,8 @@ async function handleCallInitiated(data) {
     console.log(`[Voice] Call initiated from ${from} to ${to}`);
 
     // Answer the call
-    await telnyxService.answerCall(callControlId, `${process.env.BASE_URL || 'http://localhost:3000'}/webhook/telnyx`);
+    const config = require('../config');
+    await telnyxService.answerCall(callControlId, `${config.baseUrl}/webhook/telnyx`);
   } catch (err) {
     console.error('[Voice] Error handling call.initiated:', err.message);
   }
